@@ -3,12 +3,13 @@ import re
 import requests
 import os
 from flask import (Blueprint, current_app, redirect, render_template,
-                   request, session)
+                   request)
 import markdown
 from sqlmodel import Session
 from ..models import Entry
 
 blog_pages = Blueprint("blog", __name__)
+
 
 def notify_tines_of_post(title, content, slug, tags_str):
     """Load the Tines config and notify Tines of a new post."""
@@ -28,6 +29,7 @@ def notify_tines_of_post(title, content, slug, tags_str):
         )
     except requests.exceptions.RequestException:
         return  # Fail silently if request fails
+
 
 @blog_pages.route('/blog/create/', methods=["GET", "POST"])
 def create_page():
@@ -51,10 +53,11 @@ def create_page():
 
     return redirect('/blog')
 
+
 @blog_pages.route('/blog')
 def blog():
     with Session(current_app.engine) as db_session:
-        articles = db_session.query(Entry).filter(Entry.published == True).all()
+        articles = db_session.query(Entry).filter(Entry.published is True).all()
 
     articles = [dict(article) for article in articles]
     for article in articles:
