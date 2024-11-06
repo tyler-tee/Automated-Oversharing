@@ -1,0 +1,4 @@
+{
+    "TINES_WEBHOOK": "https://your-tines-webhook-url.com",
+    "TINES_SECRET": "your_tines_secret"
+}

@@ -1,0 +1,698 @@
+{
+  "schema_version": 23,
+  "standard_lib_version": 63,
+  "action_runtime_version": 15,
+  "name": "Blog Manager",
+  "description": null,
+  "guid": "200521dbe4e6126d515dcb06d4bcb051",
+  "slug": "blog_manager",
+  "agents": [
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Share LinkedIn Post",
+      "disabled": false,
+      "description": null,
+      "guid": "21c6be360e4eb19cc1672e9bd5e9d603",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "method": "post",
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.linkedin_token>>",
+          "X-Restli-Protocol-Version": "2.0.0"
+        },
+        "content_type": "application_json",
+        "payload": {
+          "author": "urn:li:person:<<RESOURCE.linkedin_urn>>",
+          "lifecycleState": "PUBLISHED",
+          "specificContent": {
+            "com.linkedin.ugc.ShareContent": {
+              "shareCommentary": {
+                "text": "[AUTOMATED] A new article is available on Lambdas and Lapdogs!"
+              },
+              "shareMediaCategory": "ARTICLE",
+              "media": [
+                {
+                  "status": "READY",
+                  "description": {
+                    "text": "<<summarize_blog_post.body.choices[0].message.content>>"
+                  },
+                  "originalUrl": "https://www.lambdasandlapdogs.com/blog/<<receive_new_blog_posts.body.slug>>",
+                  "title": {
+                    "text": "<<receive_new_blog_posts.body.title>>"
+                  }
+                }
+              ]
+            }
+          },
+          "visibility": {
+            "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+          }
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Share on X",
+      "disabled": false,
+      "description": null,
+      "guid": "8ad61fb595139ce053a05d561cda26a0",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "url": "https://api.twitter.com/2/tweets",
+        "method": "post",
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.x_oauth_2_0>>"
+        },
+        "content_type": "application_json",
+        "payload": {
+          "text": "New blog post on Lambdas and Lapdogs - Check it out: \n\n<<summarize_blog_post.body.choices[0].message.content>>\n\nhttps://lambdasandlapdogs.com/blog/<<receive_new_blog_posts.body.slug>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::WebhookAgent",
+      "name": "Receive New Blog Posts",
+      "disabled": false,
+      "description": null,
+      "guid": "700244d2bf3e8f08372aed5cec6c5fd0",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "path": "837c970b70a45437ec23261a5c2b1c69",
+        "secret": "9973bd8498e9b2b41d96266465883479",
+        "verbs": "post",
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "Bearer <<CREDENTIAL.tines_blog_post_secret>>",
+            "path": "headers.Authorization"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Check Auth Header",
+      "disabled": false,
+      "description": null,
+      "guid": "1b093f4e0bd9196580fb62e9fbe25cfd",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "Bearer <<CREDENTIAL.tines_blog_post_secret>>",
+            "path": "<<receive_new_blog_posts.headers.authorization>>"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Summarize Blog Post",
+      "disabled": false,
+      "description": "Creates a model response for the given chat conversation.\n\nLink to documentation:\nhttps://platform.openai.com/docs/api-reference/chat/create",
+      "guid": "ed8b879e7879f3357200393d104f71bb",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "content_type": "application_json",
+        "method": "post",
+        "headers": {
+          "Authorization": "Bearer <<INPUT.openai_credential>>"
+        },
+        "payload": "=LOCAL.final_payload",
+        "local": {
+          "optional_parameters": {
+            "messages": "=INPUT.messages",
+            "model": "=INPUT.model",
+            "frequency_penalty": "=INPUT.frequency_penalty",
+            "logit_bias": "=INPUT.logit_bias",
+            "logprobs": "=INPUT.logprobs",
+            "top_logprobs": "=INPUT.top_logprobs",
+            "max_completion_tokens": "=INPUT.max_completion_tokens",
+            "n": "=INPUT.n",
+            "presence_penalty": "=INPUT.presence_penalty",
+            "response_format": "=INPUT.response_format",
+            "seed": "=INPUT.seed",
+            "service_tier": "=FORCE_ARRAY(INPUT.service_tier)[0]",
+            "stop": "=INPUT.stop",
+            "stream": "=INPUT.stream",
+            "stream_options": "=INPUT.stream_options",
+            "temperature": "=INPUT.temperature",
+            "top_p": "=INPUT.top_p",
+            "tools": "=INPUT.tools",
+            "tool_choice": "=INPUT.tool_choice",
+            "parallel_tool_calls": "=INPUT.parallel_tool_calls",
+            "user": "=INPUT.user"
+          },
+          "final_payload": "=REJECT(\n  LOCAL.optional_parameters,\n  LAMBDA(\n    item,\n    OR(\n      item = NULL,\n      IF(\n        OR(\n          TYPE(item) = \"TrueClass\",\n          TYPE(item) = \"FalseClass\",\n          TYPE(item) = \"Integer\"\n        ),\n        IS_EMPTY(TEXT(item)),\n        IS_EMPTY(item)\n      )\n    )\n  )\n)"
+        },
+        "timeout": "180"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "8fa1da5ac491fd18ab6fd7bba288e904ef98a65e5a163ba8634024376263f755",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Get URN",
+      "disabled": false,
+      "description": null,
+      "guid": "4a9793c3867e5ac969cc831d20481712",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "url": "https://api.linkedin.com/v2/userinfo",
+        "method": "get",
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.linkedin_token>>"
+        },
+        "content_type": "application_json"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::LLMAgent",
+      "name": "Summarize Blog Post",
+      "disabled": false,
+      "description": null,
+      "guid": "65abbd499690e113a875855668d04f59",
+      "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+      "options": {
+        "prompt": "Summarize the following blog post in a single sentence - Only include your summary and nothing else.\n\n<<RESOURCE.sample_blog_post>>"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    }
+  ],
+  "diagram_notes": [],
+  "links": [
+    {
+      "source": 2,
+      "receiver": 3
+    },
+    {
+      "source": 3,
+      "receiver": 4
+    },
+    {
+      "source": 4,
+      "receiver": 0
+    },
+    {
+      "source": 4,
+      "receiver": 1
+    }
+  ],
+  "diagram_layout": "{\"21c6be360e4eb19cc1672e9bd5e9d603\":[210,450],\"8ad61fb595139ce053a05d561cda26a0\":[495,450],\"700244d2bf3e8f08372aed5cec6c5fd0\":[210,75],\"1b093f4e0bd9196580fb62e9fbe25cfd\":[210,195],\"ed8b879e7879f3357200393d104f71bb\":[210,315],\"4a9793c3867e5ac969cc831d20481712\":[180,-150],\"65abbd499690e113a875855668d04f59\":[330,-135]}",
+  "send_to_story_enabled": false,
+  "entry_agent_guid": null,
+  "exit_agent_guids": [],
+  "exit_agent_guid": null,
+  "api_entry_action_guids": [],
+  "api_exit_action_guids": [],
+  "keep_events_for": 604800,
+  "reporting_status": true,
+  "send_to_story_access": null,
+  "story_library_metadata": {},
+  "parent_only_send_to_story": false,
+  "monitor_failures": false,
+  "send_to_stories": [],
+  "synchronous_webhooks_enabled": false,
+  "send_to_story_access_source": 0,
+  "send_to_story_skill_use_requires_confirmation": true,
+  "pages": [],
+  "tags": [],
+  "time_saved_unit": "minutes",
+  "time_saved_value": 0,
+  "origin_story_identifier": "cloud:98bf19cf1391e1805daf0cbdc3239e4a:200521dbe4e6126d515dcb06d4bcb051",
+  "integration_product": null,
+  "integration_vendor": null,
+  "llm_product_instructions": "",
+  "exported_at": "2024-11-06T13:40:25Z",
+  "icon": ":cityscape:",
+  "integrations": [
+    {
+      "action_inputs": [
+        {
+          "name": "OpenAI credential",
+          "description": "",
+          "required": true,
+          "type": "CREDENTIAL",
+          "ranking": -1982292598,
+          "value": "\"=CREDENTIAL.openai\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Model",
+          "description": "ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API.",
+          "required": true,
+          "type": "TEXT",
+          "ranking": -1817101548,
+          "value": "\"gpt-4o-mini\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Messages",
+          "description": "A list of messages comprising the conversation so far. [Example Python code](https://cookbook.openai.com/examples/how_to_format_inputs_to_chatgpt_models).",
+          "required": true,
+          "type": "OBJECT",
+          "ranking": -1651910498,
+          "value": "[{\"role\":\"system\",\"content\":\"You are a professional content writer who specializes in creating engaging and concise summaries for social media platforms like LinkedIn.\"},{\"role\":\"user\",\"content\":\"Summarize the following blog post in one engaging, conversational sentence for LinkedIn that highlights the main insight in a way that sparks interest and courages readers to learn more:\\n<<receive_new_blog_posts.body.content>>\"}]",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"object\",\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"system\"],\"description\":\"The role of the message author, in this case system.\"},\"content\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\"}],\"description\":\"The contents of the system message.\"},\"name\":{\"type\":\"string\",\"description\":\"An optional name for the participant.\"}},\"required\":[\"role\",\"content\"],\"additionalProperties\":false},{\"type\":\"object\",\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"user\"],\"description\":\"The role of the message author, in this case user.\"},\"content\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\"}],\"description\":\"The contents of the user message.\"},\"name\":{\"type\":\"string\",\"description\":\"An optional name for the participant.\"}},\"required\":[\"role\",\"content\"],\"additionalProperties\":false},{\"type\":\"object\",\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"assistant\"],\"description\":\"The role of the message author, in this case assistant.\"},\"content\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\"},{\"type\":\"null\"}],\"description\":\"The contents of the assistant message.\"},\"refusal\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"description\":\"The refusal message by the assistant.\"},\"name\":{\"type\":\"string\",\"description\":\"An optional name for the participant.\"},\"tool_calls\":{\"type\":\"array\",\"description\":\"The tool calls generated by the model, such as function calls.\"}},\"required\":[\"role\"],\"additionalProperties\":false},{\"type\":\"object\",\"properties\":{\"role\":{\"type\":\"string\",\"enum\":[\"tool\"],\"description\":\"The role of the message author, in this case tool.\"},\"content\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\"}],\"description\":\"The contents of the tool message.\"},\"tool_call_id\":{\"type\":\"string\",\"description\":\"Tool call that this message is responding to.\"}},\"required\":[\"role\",\"content\",\"tool_call_id\"],\"additionalProperties\":false}]}}"
+        },
+        {
+          "name": "Logit bias",
+          "description": "Modify the likelihood of specified tokens appearing in the completion.\n\nAccepts a JSON object that maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.\n",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": -1321528398,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Logprobs",
+          "description": "Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the `content` of `message`.",
+          "required": false,
+          "type": "BOOLEAN",
+          "ranking": -1156337348,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Top logprobs",
+          "description": "An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. `logprobs` must be set to `true` if this parameter is used.",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": -991146298,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "N",
+          "description": "How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": -495573148,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Seed",
+          "description": "This feature is in Beta.\nIf specified, our system will make a best effort to sample deterministically, such that repeated requests with the same `seed` and parameters should return the same result.\nDeterminism is not guaranteed, and you should refer to the `system_fingerprint` response parameter to monitor changes in the backend.\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 2,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Stop",
+          "description": "Up to 4 sequences where the API will stop generating further tokens.\n",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": 165191052,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Temperature",
+          "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.\n\nWe generally recommend altering this or `top_p` but not both.\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 495573152,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Top p",
+          "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.\n\nWe generally recommend altering this or `temperature` but not both.\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 660764202,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Tools",
+          "description": "A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.\n",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": 825955252,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Service tier",
+          "description": "Specifies the latency tier to use for processing the request. This parameter is relevant for customers subscribed to the scale tier service:\n  - If set to 'auto', and the Project is Scale tier enabled, the system will utilize scale tier credits until they are exhausted. \n  - If set to 'auto', and the Project is not Scale tier enabled, the request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.\n  - If set to 'default', the request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.\n  - When not set, the default behavior is 'auto'.\n\n  When this parameter is set, the response body will include the `service_tier` utilized.\n",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 1156337352,
+          "value": "\"\"",
+          "options": [
+            "auto",
+            "default"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Tool choice",
+          "description": "Controls which (if any) tool is called by the model. none means the model will not call any tool and instead generates a message. auto means the model can pick between generating a message or calling one or more tools. required means the model must call one or more tools. Specifying a particular tool via {\"type\": \"function\", \"function\": {\"name\": \"my_function\"}} forces the model to call that tool.",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": 1982292602,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Stream options",
+          "description": "Options for streaming response. Only set this when you set stream: true.",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": 2064888125,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Parallel tool calls",
+          "description": "Whether to enable parallel function calling during tool use.",
+          "required": false,
+          "type": "BOOLEAN",
+          "ranking": 2126834767,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Frequency penalty",
+          "description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.\n\n[See more information about frequency and presence penalties.](https://platform.openai.com/docs/guides/text-generation)\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 2137159207,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Max completion tokens",
+          "description": "An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and [reasoning tokens](https://platform.openai.com/docs/guides/reasoning).\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 2142321427,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Presence penalty",
+          "description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.\n\n[See more information about frequency and presence penalties.](https://platform.openai.com/docs/guides/text-generation)\n",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 2144902537,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Stream",
+          "description": "If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format) as they become available, with the stream terminated by a `data: [DONE]` message. [Example Python code](https://cookbook.openai.com/examples/how_to_stream_completions).\n",
+          "required": false,
+          "type": "BOOLEAN",
+          "ranking": 2147161009,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "User",
+          "description": "A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse. [Learn more](https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids).\n",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 2147322328,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        },
+        {
+          "name": "Response format",
+          "description": "An object specifying the format that the model must output. Compatible with [GPT-4o](https://platform.openai.com/docs/models#gpt-4o), [GPT-4o mini](https://platform.openai.com/docs/models#gpt-4o-mini), [GPT-4 Turbo](https://platform.openai.com/docs/models#gpt-4-and-gpt-4-turbo) and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.\n\nSetting to `{ \"type\": \"json_schema\", \"json_schema\": {...} }` enables Structured Outputs which ensures the model will match your supplied JSON schema. Learn more in the [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).\n\nSetting to `{ \"type\": \"json_object\" }` enables JSON mode, which ensures the message the model generates is valid JSON.\n\n**Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly \"stuck\" request. Also note that the message content may be partially cut off if `finish_reason=\"length\"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.\n",
+          "required": false,
+          "type": "OBJECT",
+          "ranking": 2147402988,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "\"{}\""
+        }
+      ],
+      "action_guid": "ed8b879e7879f3357200393d104f71bb",
+      "product": "OpenAI"
+    }
+  ]
+}
