@@ -31,27 +31,24 @@ def notify_tines_of_post(title, content, slug, tags_str):
         return  # Fail silently if request fails
 
 
-@blog_pages.route('/blog/create/', methods=["GET", "POST"])
+@blog_pages.route('/blog/create/', methods=["POST"])
 def create_page():
-    if request.method == "POST":
-        title = request.form.get("inputTitle")
-        content = request.form.get("post")
-        slug = re.sub(r'[^\w]+', '-', title.lower())
-        tags_list = request.form.getlist("tags")
-        tags_str = ",".join(tags_list)
-        published = 'publish' in request.form
+    title = request.form.get("inputTitle")
+    content = request.form.get("post")
+    slug = re.sub(r'[^\w]+', '-', title.lower())
+    tags_list = request.form.getlist("tags")
+    tags_str = ",".join(tags_list)
+    published = 'publish' in request.form
 
-        post = Entry(title=title, content=content, slug=slug, tags=tags_str, published=published)
-        with Session(current_app.engine) as db_session:
-            db_session.add(post)
-            db_session.commit()
+    post = Entry(title=title, content=content, slug=slug, tags=tags_str, published=published)
+    with Session(current_app.engine) as db_session:
+        db_session.add(post)
+        db_session.commit()
 
-        if published:
-            notify_tines_of_post(title, content, slug, tags_str)
+    if published:
+        notify_tines_of_post(title, content, slug, tags_str)
 
-        return redirect(f'/blog/{slug}' if published else '/blog/drafts')
-
-    return redirect('/blog')
+    return redirect(f'/blog/{slug}' if published else '/blog/drafts')
 
 
 @blog_pages.route('/blog')
