@@ -1,5 +1,8 @@
 # Automated Oversharing
 
+![SonarCloud Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=tyler-tee_Automated-Oversharing&metric=alert_status)
+
+
 **Automated Oversharing** is a Python-based project that integrates Flask with Tines to streamline blog post sharing on LinkedIn and X (formerly Twitter). Developed as companion content for the article *Using Tines to Broadcast Your Half-Baked Blog*, this repo provides a self-contained Flask example and a complete Tines story to automate the summarization and social sharing of blog content.
 
 ## Overview
